@@ -1,0 +1,60 @@
+<div class="container mt-4">
+  <h1 class="mb-4">Task Manager</h1>
+
+  <!-- Task Form -->
+  <app-task-form (taskCreated)="onTaskCreated($event)"></app-task-form>
+
+  <!-- Filter Buttons -->
+  <div class="btn-group mb-3" role="group">
+    <button 
+      type="button" 
+      class="btn"
+      [class.btn-primary]="filterStatus === 'all'"
+      [class.btn-outline-primary]="filterStatus !== 'all'"
+      (click)="onFilterChange('all')">
+      Alle ({{ tasks.length }})
+    </button>
+    <button 
+      type="button" 
+      class="btn"
+      [class.btn-primary]="filterStatus === 'active'"
+      [class.btn-outline-primary]="filterStatus !== 'active'"
+      (click)="onFilterChange('active')">
+      Aktiv ({{ activeTasksCount }})
+    </button>
+    <button 
+      type="button" 
+      class="btn"
+      [class.btn-primary]="filterStatus === 'completed'"
+      [class.btn-outline-primary]="filterStatus !== 'completed'"
+      (click)="onFilterChange('completed')">
+      Erledigt ({{ completedTasksCount }})
+    </button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Laden...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+
+  <!-- Task List -->
+  <div *ngIf="!loading && filteredTasks.length === 0" class="alert alert-info">
+    Keine Tasks gefunden.
+  </div>
+
+  <div class="list-group">
+    <app-task-item 
+      *ngFor="let task of filteredTasks"
+      [task]="task"
+      (taskUpdated)="onTaskUpdated($event)"
+      (taskDeleted)="onTaskDeleted($event)">
+    </app-task-item>
+  </div>
+</div>

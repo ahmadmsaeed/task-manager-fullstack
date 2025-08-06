@@ -1,0 +1,101 @@
+<div class="list-group-item">
+  <div *ngIf="!isEditing">
+    <div class="d-flex justify-content-between align-items-start">
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center mb-2">
+          <input 
+            type="checkbox" 
+            class="form-check-input me-2"
+            [checked]="task.isCompleted"
+            (change)="toggleComplete()">
+          <h5 
+            class="mb-0"
+            [class.text-decoration-line-through]="task.isCompleted"
+            [class.text-muted]="task.isCompleted">
+            {{ task.title }}
+          </h5>
+          <span 
+            class="badge ms-2"
+            [ngClass]="'bg-' + getPriorityClass(task.priority)">
+            {{ getPriorityLabel(task.priority) }}
+          </span>
+        </div>
+        
+        <p class="mb-1 text-muted">{{ task.description }}</p>
+        
+        <small class="text-muted">
+          Erstellt: {{ task.createdAt | date:'dd.MM.yyyy HH:mm' }}
+          <span *ngIf="task.completedAt">
+            | Erledigt: {{ task.completedAt | date:'dd.MM.yyyy HH:mm' }}
+          </span>
+        </small>
+      </div>
+      
+      <div class="btn-group btn-group-sm">
+        <button 
+          class="btn btn-outline-primary"
+          (click)="startEdit()"
+          title="Bearbeiten">
+          ✏️
+        </button>
+        <button 
+          class="btn btn-outline-danger"
+          (click)="deleteTask()"
+          title="Löschen">
+          🗑️
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isEditing">
+    <div class="mb-3">
+      <input 
+        type="text" 
+        class="form-control mb-2"
+        [(ngModel)]="editTask.title"
+        placeholder="Titel">
+      
+      <textarea 
+        class="form-control mb-2"
+        [(ngModel)]="editTask.description"
+        rows="2"
+        placeholder="Beschreibung">
+      </textarea>
+      
+      <select 
+        class="form-select mb-2"
+        [(ngModel)]="editTask.priority">
+        <option [value]="Priority.Low">Niedrig</option>
+        <option [value]="Priority.Medium">Mittel</option>
+        <option [value]="Priority.High">Hoch</option>
+      </select>
+      
+      <div class="form-check mb-2">
+        <input 
+          type="checkbox" 
+          class="form-check-input"
+          id="editCompleted{{ task.id }}"
+          [(ngModel)]="editTask.isCompleted">
+        <label 
+          class="form-check-label" 
+          for="editCompleted{{ task.id }}">
+          Erledigt
+        </label>
+      </div>
+    </div>
+    
+    <div class="btn-group btn-group-sm">
+      <button 
+        class="btn btn-success"
+        (click)="saveEdit()">
+        Speichern
+      </button>
+      <button 
+        class="btn btn-secondary"
+        (click)="cancelEdit()">
+        Abbrechen
+      </button>
+    </div>
+  </div>
+</div>
