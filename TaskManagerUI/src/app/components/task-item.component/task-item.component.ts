@@ -4,35 +4,39 @@ import { Task, UpdateTask, Priority } from '../../models/task.model';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+// komponente für einzelne task items - handling von edit, delete, toggle
 @Component({
   selector: 'app-task-item',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe], // DatePipe für datum formatting
   templateUrl: './task-item.component.html',
   styleUrls: ['./task-item.component.css']
 })
 export class TaskItemComponent {
-  @Input() task!: Task;
-  @Output() taskUpdated = new EventEmitter<Task>();
-  @Output() taskDeleted = new EventEmitter<number>();
+  // props von parent komponente
+  @Input() task!: Task; // der anzuzeigende task
+  @Output() taskUpdated = new EventEmitter<Task>(); // wenn task geändert wird
+  @Output() taskDeleted = new EventEmitter<number>(); // wenn task gelöscht wird
 
+  // state für edit modus
   isEditing = false;
-  editTask: UpdateTask = {} as UpdateTask;
-  Priority = Priority;
+  editTask: UpdateTask = {} as UpdateTask; // copy des tasks für editing
+  Priority = Priority; // für template zugriff
 
   constructor(private taskService: TaskService) { }
 
+  // task completion status umschalten
   toggleComplete(): void {
     const updateTask: UpdateTask = {
       title: this.task.title,
       description: this.task.description,
-      isCompleted: !this.task.isCompleted,
+      isCompleted: !this.task.isCompleted, // status umkehren
       priority: this.task.priority
     };
 
     this.taskService.updateTask(this.task.id, updateTask).subscribe({
       next: (updatedTask) => {
-        this.taskUpdated.emit(updatedTask);
+        this.taskUpdated.emit(updatedTask); // parent informieren
       },
       error: (error) => {
         console.error('Error updating task:', error);
@@ -41,8 +45,10 @@ export class TaskItemComponent {
     });
   }
 
+  // edit modus aktivieren
   startEdit(): void {
     this.isEditing = true;
+    // copy der aktuellen werte für editing
     this.editTask = {
       title: this.task.title,
       description: this.task.description,
@@ -51,11 +57,14 @@ export class TaskItemComponent {
     };
   }
 
+  // edit modus abbrechen
   cancelEdit(): void {
     this.isEditing = false;
   }
 
+  // änderungen speichern
   saveEdit(): void {
+    // validation
     if (this.editTask.title.trim() === '') {
       alert('Der Titel darf nicht leer sein');
       return;
@@ -63,8 +72,8 @@ export class TaskItemComponent {
 
     this.taskService.updateTask(this.task.id, this.editTask).subscribe({
       next: (updatedTask) => {
-        this.taskUpdated.emit(updatedTask);
-        this.isEditing = false;
+        this.taskUpdated.emit(updatedTask); // parent über änderung informieren
+        this.isEditing = false; // edit modus verlassen
       },
       error: (error) => {
         console.error('Error updating task:', error);
@@ -73,11 +82,12 @@ export class TaskItemComponent {
     });
   }
 
+  // task löschen mit bestätigung
   deleteTask(): void {
     if (confirm(`Möchten Sie die Aufgabe "${this.task.title}" wirklich löschen?`)) {
       this.taskService.deleteTask(this.task.id).subscribe({
         next: () => {
-          this.taskDeleted.emit(this.task.id);
+          this.taskDeleted.emit(this.task.id); // parent über löschung informieren
         },
         error: (error) => {
           console.error('Error deleting task:', error);
@@ -87,6 +97,7 @@ export class TaskItemComponent {
     }
   }
 
+  // helper für priority anzeige
   getPriorityLabel(priority: Priority): string {
     switch (priority) {
       case Priority.Low:
@@ -100,6 +111,7 @@ export class TaskItemComponent {
     }
   }
 
+  // helper für priority bootstrap klassen
   getPriorityClass(priority: Priority): string {
     switch (priority) {
       case Priority.Low:

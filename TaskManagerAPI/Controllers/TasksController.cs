@@ -5,27 +5,30 @@ using TaskManagerAPI.Repositories;
 
 namespace TaskManagerAPI.Controllers
 {
+    // das ist mein hauptcontroller der alle http requests für tasks abarbeitet
     [ApiController]
     [Route("api/[controller]")]
     public class TasksController : ControllerBase
     {
+        // hier bekomme ich repository und logger durch dependency injection
         private readonly ITaskRepository _repository;
         private readonly ILogger<TasksController> _logger;
 
+        // constructor - das system gibt mir automatisch repository und logger
         public TasksController(ITaskRepository repository, ILogger<TasksController> logger)
         {
             _repository = repository;
             _logger = logger;
         }
 
-        // GET: api/tasks
+        // alle tasks holen - GET api/tasks
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TaskDto>>> GetAllTasks()
         {
             try
             {
                 var tasks = await _repository.GetAllTasksAsync();
-                var taskDtos = tasks.Select(MapToDto);
+                var taskDtos = tasks.Select(MapToDto); // models zu DTOs mappen
                 return Ok(taskDtos);
             }
             catch (Exception ex)
@@ -35,7 +38,7 @@ namespace TaskManagerAPI.Controllers
             }
         }
 
-        // GET: api/tasks/5
+        // einzelnen task holen - GET api/tasks/5
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskDto>> GetTask(int id)
         {
@@ -55,28 +58,31 @@ namespace TaskManagerAPI.Controllers
             }
         }
 
-        // POST: api/tasks
+        // neuen task erstellen - POST api/tasks
         [HttpPost]
         public async Task<ActionResult<TaskDto>> CreateTask(CreateTaskDto createTaskDto)
         {
             try
             {
+                // einfache validierung - titel muss da sein
                 if (string.IsNullOrWhiteSpace(createTaskDto.Title))
                 {
                     return BadRequest("Der Titel darf nicht leer sein");
                 }
 
+                // DTO zu model umwandeln
                 var task = new TaskItem
                 {
                     Title = createTaskDto.Title,
                     Description = createTaskDto.Description,
                     Priority = createTaskDto.Priority,
-                    IsCompleted = false
+                    IsCompleted = false // neue tasks sind immer unfertig
                 };
 
                 var createdTask = await _repository.CreateTaskAsync(task);
                 var taskDto = MapToDto(createdTask);
 
+                // gibt 201 created zurück mit location header
                 return CreatedAtAction(
                     nameof(GetTask),
                     new { id = taskDto.Id },
@@ -90,7 +96,7 @@ namespace TaskManagerAPI.Controllers
             }
         }
 
-        // PUT: api/tasks/5
+        // task updaten - PUT api/tasks/5
         [HttpPut("{id}")]
         public async Task<ActionResult<TaskDto>> UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
@@ -101,6 +107,7 @@ namespace TaskManagerAPI.Controllers
                     return BadRequest("Der Titel darf nicht leer sein");
                 }
 
+                // DTO zu model für repository
                 var task = new TaskItem
                 {
                     Title = updateTaskDto.Title,
@@ -124,7 +131,7 @@ namespace TaskManagerAPI.Controllers
             }
         }
 
-        // DELETE: api/tasks/5
+        // task löschen - DELETE api/tasks/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
@@ -135,7 +142,7 @@ namespace TaskManagerAPI.Controllers
                 {
                     return NotFound($"Task mit ID {id} wurde nicht gefunden");
                 }
-                return NoContent();
+                return NoContent(); // 204 no content bei erfolgreichem delete
             }
             catch (Exception ex)
             {
@@ -144,7 +151,7 @@ namespace TaskManagerAPI.Controllers
             }
         }
 
-        // GET: api/tasks/status/completed
+        // tasks nach status filtern - GET api/tasks/status/true
         [HttpGet("status/{isCompleted}")]
         public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksByStatus(bool isCompleted)
         {
@@ -161,6 +168,8 @@ namespace TaskManagerAPI.Controllers
             }
         }
 
+        // helper methode um model zu dto zu konvertieren
+        // mache ich hier statt automapper weil das projekt klein ist
         private static TaskDto MapToDto(TaskItem task)
         {
             return new TaskDto
