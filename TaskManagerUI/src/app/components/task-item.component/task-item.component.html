@@ -63,13 +63,13 @@
         placeholder="Beschreibung">
       </textarea>
       
-      <select 
-        class="form-select mb-2"
-        [(ngModel)]="editTask.priority">
-        <option [value]="Priority.Low">Niedrig</option>
-        <option [value]="Priority.Medium">Mittel</option>
-        <option [value]="Priority.High">Hoch</option>
-      </select>
+<select 
+  class="form-select mb-2"
+  [(ngModel)]="editTask.priority">
+  <option [ngValue]="Priority.Low">Niedrig</option>
+  <option [ngValue]="Priority.Medium">Mittel</option>
+  <option [ngValue]="Priority.High">Hoch</option>
+</select>
       
       <div class="form-check mb-2">
         <input 
